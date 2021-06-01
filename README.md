@@ -8,5 +8,5 @@
 
 
 
-![](F:\typora_img\seq_diagram.jpg)
+![](.\images\seq_diagram.jpg)
 
