@@ -26,6 +26,8 @@ public class ChatServer {
 
     private AsynchronousChannelGroup channelGroup;
     private AsynchronousServerSocketChannel serverChannel;
+    // 存储已经连接的客户端，存储的参数是相应的clienthandler
+    // 给定clienthandler，可以得到对应的clientchannel，反之则很困难
     private List<ClientHandler> connectedClients;
     private Charset charset = Charset.forName("UTF-8");
     private int port;
@@ -62,6 +64,7 @@ public class ChatServer {
 
             while (true) {
                 serverChannel.accept(null, new AcceptHandler());
+                // 使其阻塞在这里，从而防止频繁的调用accept，浪费系统资源，使其从acceptHandler中调用accept方法
                 System.in.read();
             }
             
@@ -78,6 +81,7 @@ public class ChatServer {
 
     }
 
+    // CompletionHandler的第一个泛型参数是io操作返回的结果，第二个参数是attachment
     private class AcceptHandler implements CompletionHandler<AsynchronousSocketChannel, Object> {
 
         @Override
@@ -90,6 +94,7 @@ public class ChatServer {
                 ByteBuffer buffer = ByteBuffer.allocate(BUFFER);
                 // TODO 将新用户添加到在线用户列表
                 addClient(handler);
+                // 第一个buffer是指讲channel中read到的结果放入buffer中，第二个buffer是作为attachment参数传入的
                 clientChannel.read(buffer, buffer, handler);
             }
         }
@@ -122,6 +127,7 @@ public class ChatServer {
         @Override
         public void completed(Integer result, Object attachment) {
             ByteBuffer buffer = (ByteBuffer) attachment;
+            // 如果是写操作，buffer为null
             if (buffer != null) {
                 if (result <= 0) {
                     // 客户端异常
