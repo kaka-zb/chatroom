@@ -32,6 +32,7 @@ public class ChatServer {
     private void start() {
         try {
             server = ServerSocketChannel.open();
+            // 设置当前模式为非阻塞
             server.configureBlocking(false);
             server.socket().bind(new InetSocketAddress(port));
 
@@ -40,6 +41,7 @@ public class ChatServer {
             System.out.println("启动服务器， 监听端口：" + port + "...");
 
             while (true) {
+                // 阻塞到至少有一个通道在你注册的事件上就绪了
                 selector.select();
                 Set<SelectionKey> selectionKeys = selector.selectedKeys();
                 for (SelectionKey key : selectionKeys) {
@@ -80,7 +82,10 @@ public class ChatServer {
 
                 // 检查用户是否退出
                 if (readyToQuit(fwdMsg)) {
+                    // 取消监听相应的通道和所注册的事件
                     key.cancel();
+                    // 使阻塞在select方法上的线程立即返回结果，因为所注册的key已经发生了变化，所以相当于一次更新操作
+                    // 但是在本例中并无作用，因为只有一个线程
                     selector.wakeup();
                     System.out.println(getClientName(client) + "已断开");
                 }

@@ -15,6 +15,7 @@ public class ChatServer {
     private final String QUIT = "quit";
 
     private ServerSocket serverSocket;
+    // 使用一个 map 来存储连接的客户端，key是port，value是socket相应的writer
     private Map<Integer, Writer> connectedClients;
 
     public ChatServer() {
@@ -24,6 +25,8 @@ public class ChatServer {
     public synchronized void addClient(Socket socket) throws IOException {
         if (socket != null) {
             int port = socket.getPort();
+            // OutputStreamWriter的作用是将指定的字符串按照特定的字符集转换为字节流之后写出
+            // BufferedWriter的作用是为其他字符输出流添加一些缓冲功能
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(socket.getOutputStream())
             );
@@ -35,6 +38,7 @@ public class ChatServer {
     public synchronized void removeClient(Socket socket) throws IOException {
         if (socket != null) {
             int port = socket.getPort();
+            // 关闭相应的字符流
             if (connectedClients.containsKey(port)) {
                 connectedClients.get(port).close();
             }
@@ -43,6 +47,8 @@ public class ChatServer {
         }
     }
 
+
+    // 向其他客户端转发消息，遍历map即可
     public synchronized void forwardMessage(Socket socket, String fwdMsg) throws IOException {
         for (Integer id : connectedClients.keySet()) {
             if (!id.equals(socket.getPort())) {
